@@ -66,7 +66,7 @@ jobs:
       - name: Push to DockerHub
         uses: docker/build-push-action@v4
         with:
-          context: ./backend/
+          context: ./backend/foodgram/
           push: true
           tags: vladvorobyeff/foodgram_backend:latest
   
@@ -117,7 +117,7 @@ jobs:
         with:
           context: ./infra/
           push: true
-          tags: vladvorobyeff/foodgram_infra:latest
+          tags: vladvorobyeff/foodgram_nginx:latest
 
   deploy:
     runs-on: ubuntu-latest

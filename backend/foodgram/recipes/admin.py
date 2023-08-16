@@ -15,7 +15,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'id', 'name', 'author', 'cooking_time', 'how_many_times_favorited')
     readonly_fields = ('how_many_times_favorited',)
-    search_fields = ('name', 'author__username', 'author__email',)
+    search_fields = ('name', 'author__email', 'author__username',)
     list_filter = ('name', 'author', 'tags',)
 
     @display(description='Количество в избранных')
