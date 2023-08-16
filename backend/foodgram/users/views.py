@@ -7,7 +7,6 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-
 from users.models import Follow
 
 
@@ -42,8 +41,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(
         detail=False,
-        permission_classes=(IsAuthenticated,)
-        )
+        permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         user = request.user
         queryset = get_user_model().objects.filter(following__user=user)
@@ -51,6 +49,5 @@ class CustomUserViewSet(UserViewSet):
         serializer = FollowSerializer(
             pages,
             many=True,
-            context={'request': request}
-            )
+            context={'request': request})
         return self.get_paginated_response(serializer.data)
