@@ -1,4 +1,11 @@
 version: '3.3'
+
+volumes:
+  db_vol:
+  static_vol:
+  media_vol:
+  result_build:
+
 services:
 
   db:
@@ -6,7 +13,7 @@ services:
     volumes:
       - db_vol:/var/lib/postgresql/data/
     env_file:
-      - ./.env
+      - .env
   
   backend:
     image: vladvorobyeff/foodgram_backend:latest
@@ -16,7 +23,7 @@ services:
     depends_on:
       - db
     env_file:
-      - ./.env
+      - .env
 
   frontend:
     image: vladvorobyeff/foodgram_frontend:latest
@@ -37,9 +44,3 @@ services:
       - media_vol:/var/html/media/
     depends_on:
       - backend
-
-volumes:
-  db_vol:
-  static_vol:
-  media_vol:
-  result_build:
