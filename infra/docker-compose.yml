@@ -9,17 +9,15 @@ services:
       - ./.env
   
   backend:
-      build:
-        context: ../backend/foodgram/
-        dockerfile: Dockerfile
-      restart: always
-      volumes:
-        - static_vol:/app/static/
-        - media_vol:/app/media/
-      depends_on:
-        - db
-      env_file:
-        - ./.env
+    image: vladvorobyeff/foodgram_frontend:latest
+    restart: always
+    volumes:
+      - static_vol:/app/static/
+      - media_vol:/app/media/
+    depends_on:
+      - db
+    env_file:
+      - ./.env
 
   frontend:
     image: vladvorobyeff/foodgram_frontend:latest
@@ -46,3 +44,4 @@ volumes:
   db_vol:
   static_vol:
   media_vol:
+  result_build:
