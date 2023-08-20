@@ -4,7 +4,7 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import Ingredient, IngredientRecipe, Recipe, Tag
-from rest_framework import status
+from rest_framework import serializers, status
 from rest_framework.exceptions import ValidationError
 from rest_framework.fields import IntegerField, SerializerMethodField
 from rest_framework.relations import PrimaryKeyRelatedField
@@ -94,9 +94,9 @@ class TagSerializer(ModelSerializer):
 
 
 class RecipeReadSerializer(ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
-    ingredients = SerializerMethodField(method_name='get_ingredients')
     author = CustomUserSerializer(read_only=True)
+    ingredients = SerializerMethodField(method_name='get_ingredients')
+    tags = TagSerializer(many=True, read_only=True)
     image = Base64ImageField()
     is_favorited = SerializerMethodField(
         method_name='get_is_favorited', read_only=True)
@@ -258,6 +258,9 @@ class RecipeWriteSerializer(ModelSerializer):
 
 class RecipeShortSerializer(ModelSerializer):
     image = Base64ImageField()
+    name = serializers.ReadOnlyField()
+    cooking_time = serializers.ReadOnlyField()
+    author = CustomUserSerializer(read_only=True)
 
     class Meta:
         model = Recipe
