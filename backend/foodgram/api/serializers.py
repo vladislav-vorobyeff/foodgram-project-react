@@ -62,7 +62,7 @@ class FollowSerializer(CustomUserSerializer):
             )
         if user == author:
             raise ValidationError(
-                detail='Нельзя подписаться на самого себя',
+                detail='Невозможно подписаться на самого себя',
                 code=status.HTTP_400_BAD_REQUEST
             )
         return data
