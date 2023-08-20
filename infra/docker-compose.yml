@@ -9,7 +9,7 @@ services:
       - ./.env
   
   backend:
-    image: vladvorobyeff/foodgram_frontend:latest
+    image: vladvorobyeff/foodgram_backend:latest
     volumes:
       - static_vol:/app/static/
       - media_vol:/app/media/
@@ -36,7 +36,7 @@ services:
       - static_vol:/var/html/static/
       - media_vol:/var/html/media/
     depends_on:
-      - frontend
+      - backend
 
 volumes:
   db_vol:
