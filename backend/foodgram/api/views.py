@@ -10,7 +10,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
+from recipes.models import (Favorite, Ingredient, IngredientInRecipe, Recipe,
                             ShoppingCart, Tag)
 from rest_framework import status
 from rest_framework.decorators import action
@@ -21,8 +21,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = Recipe.objects.prefetch_related('tags',
-                                               'recipe_ingredients').all()
+    queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
     pagination_class = CustomPagination
     filter_backends = (DjangoFilterBackend,)
@@ -82,10 +81,11 @@ class RecipeViewSet(ModelViewSet):
         if not user.shopping_cart.exists():
             return Response(status=HTTP_400_BAD_REQUEST)
 
-        ingredients = IngredientRecipe.objects.filter(
+        ingredients = IngredientInRecipe.objects.filter(
             recipe__shopping_cart__user=request.user).values(
-                'ingredient__name',
-                'ingredient__measurement_unit').annotate(amount=Sum('amount'))
+                'ingredient__name', 'ingredient__measurement_unit').annotate(
+                    amount=Sum('amount')
+        )
 
         today = datetime.today()
         content = (

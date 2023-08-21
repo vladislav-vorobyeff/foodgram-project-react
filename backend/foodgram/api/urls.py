@@ -4,12 +4,12 @@ from rest_framework.routers import DefaultRouter
 
 app_name = 'api'
 
-router_v1 = DefaultRouter()
+router = DefaultRouter()
 
-router_v1.register('ingredients', IngredientViewSet)
-router_v1.register('tags', TagViewSet)
-router_v1.register('recipes', RecipeViewSet)
+router.register('ingredients', IngredientViewSet)
+router.register('tags', TagViewSet)
+router.register('recipes', RecipeViewSet)
 
 urlpatterns = [
-    path('', include(router_v1.urls)),
+    path('', include(router.urls)),
 ]

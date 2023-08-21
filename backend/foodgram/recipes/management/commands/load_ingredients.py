@@ -1,6 +1,7 @@
-import json
+import csv
 
-from django.core.management.base import BaseCommand
+from django.conf import settings
+from django.core.management import BaseCommand
 from recipes.models import Ingredient
 
 
@@ -8,12 +9,14 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         with open(
-            'recipes/management/commands/data/ingredients.json', 'rb'
-        ) as f:
-            data = json.load(f)
-            for item in data:
-                print(item)
-                Ingredient.objects.create(
-                    name=item['name'],
-                    measurement_unit=item['measurement_unit']
-                )
+            f'{settings.BASE_DIR}/data/ingredients.csv',
+            'r',
+            encoding='utf-8',
+        ) as file:
+            file_reader = csv.reader(file)
+            for row in file_reader:
+                name, measurement_unit = row
+                Ingredient.objects.get_or_create(
+                    name=name,
+                    measurement_unit=measurement_unit)
+        self.stdout.write(self.style.SUCCESS('Все ингридиенты загружены!'))

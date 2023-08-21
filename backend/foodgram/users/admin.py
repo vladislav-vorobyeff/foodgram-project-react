@@ -11,11 +11,13 @@ class UserAdmin(UserAdmin):
         'email',
         'first_name',
         'last_name',
-        'password',
     )
-    list_filter = ('username', 'email')
+    list_filter = ('is_superuser', 'is_staff', 'is_active')
+    search_fields = ('username', 'email')
 
 
 @admin.register(Follow)
 class FollowAdmin(admin.ModelAdmin):
-    list_display = ('user', 'author',)
+    list_display = ('id', 'user', 'author',)
+    # list_filter = ('user', 'author',)
+    search_fields = ('user__username', 'user__email',)
