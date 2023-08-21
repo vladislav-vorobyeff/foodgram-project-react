@@ -1,23 +1,28 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin
-from users.models import Follow, User
+from users.models import CustomUser, Subscriptions
 
 
-@admin.register(User)
-class UserAdmin(UserAdmin):
+class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
-        'id',
         'username',
         'email',
         'first_name',
         'last_name',
+        'is_staff'
     )
-    list_filter = ('is_superuser', 'is_staff', 'is_active')
-    search_fields = ('username', 'email')
+    search_fields = (
+        'username',
+        'email',
+        'first_name',
+        'last_name',
+        'is_staff'
+    )
 
 
-@admin.register(Follow)
-class FollowAdmin(admin.ModelAdmin):
-    list_display = ('id', 'user', 'author',)
-    # list_filter = ('user', 'author',)
-    search_fields = ('user__username', 'user__email',)
+class SubscriptionsAdmin(admin.ModelAdmin):
+    list_display = ('author', 'user', 'add_date')
+    search_fields = ('author', 'user', 'add_date')
+
+
+admin.site.register(CustomUser, CustomUserAdmin)
+admin.site.register(Subscriptions, SubscriptionsAdmin)
