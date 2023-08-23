@@ -65,7 +65,7 @@ class FavoriteViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
         if Favorite.objects.filter(user=request.user,
                                    recipe=recipe).exists():
             return Response(
-                {'errors': 'Этот рецепт уже есть в Избранном'},
+                {'errors': 'Уже добавлен в избранное'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         Favorite.objects.create(user=request.user, recipe=recipe)
@@ -77,7 +77,7 @@ class FavoriteViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
         if not Favorite.objects.filter(user=request.user,
                                        recipe=recipe).exists():
             return Response(
-                {'errors': 'В Избранном нет такого рецепта '},
+                {'errors': 'Этого репета нет в избранном'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         get_object_or_404(Favorite, user=request.user, recipe=recipe).delete()
@@ -95,7 +95,7 @@ class ShoppingCartViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
         if ShoppingCart.objects.filter(user=request.user,
                                        recipe=recipe).exists():
             return Response(
-                {'errors': 'Этот рецепт уже добавлен в список покупок'},
+                {'errors': 'УЖе находится в списке покупок'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         ShoppingCart.objects.create(user=request.user, recipe=recipe)
@@ -107,7 +107,7 @@ class ShoppingCartViewSet(CreateModelMixin, DestroyModelMixin, GenericViewSet):
         if not ShoppingCart.objects.filter(user=request.user,
                                            recipe=recipe).exists():
             return Response(
-                {'errors': 'В списке покупок нет такого рецепта '},
+                {'errors': 'Нет в списке покупок'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         get_object_or_404(ShoppingCart, user=request.user,
@@ -133,15 +133,16 @@ class DownloadShoppingCartViewSet(APIView):
                         ing.amount, ing.ingredient.measurement_unit
                     ]
         shop_string = (
-            f'Отобрано рецептов: {recipe_count}\n\n'
-            f'Необходимые ингредиенты:\n\n')
+            f'Количество рецептов: {recipe_count}\n\n'
+            f'Ингредиенты к покупке:\n\n')
         for key, value in shopping_list_dict.items():
             shop_string += f'{key} ({value[1]}) - {str(value[0])}\n'
         response = HttpResponse(
             shop_string,
             content_type='text/plain, charset=utf8'
         )
-        response['Content-Disposition'] = 'attachment; filename="cart.txt"'
+        response['Content-Disposition'] = 'attachment; '
+        'filename="shopping_list.txt"'
         return response
 
 

@@ -13,6 +13,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split()
 
+CSRF_TRUSTED_ORIGINS = ['https://foodgramvlad.hopto.org']
+
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -126,6 +128,8 @@ DJOSER = {
 
     'HIDE_USERS': False,
 }
+
+CSRF_TRUSTED_ORIGINS = ['https://foodgramvlad.hopto.org']
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

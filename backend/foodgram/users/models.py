@@ -5,35 +5,35 @@ from django.db import models
 
 class CustomUser(AbstractUser):
     username = models.CharField(
-        'Юзернейм',
-        max_length=150,
+        'username',
+        max_length=200,
         unique=True,
         validators=[
             RegexValidator(
                 regex=r"^[\w.@+-]+$",
-                message="Недопустимый username",
+                message="Некорректный username",
             )
         ],
     )
+    first_name = models.CharField(
+        'Имя',
+        max_length=200
+    )
+    last_name = models.CharField(
+        'Фамилия',
+        max_length=200
+    )
     email = models.EmailField(
         'Email',
-        max_length=254,
+        max_length=200,
         unique=True
     )
     password = models.CharField(
         'Пароль',
-        max_length=150
-    )
-    first_name = models.CharField(
-        'Имя',
-        max_length=150
-    )
-    last_name = models.CharField(
-        'Фамилия',
-        max_length=150
+        max_length=200
     )
     is_staff = models.BooleanField(
-        'Админ',
+        'Администратор?',
         default=False
     )
 
@@ -74,7 +74,7 @@ class Subscriptions(models.Model):
                 name='unique_subscribe'
             ),
             models.CheckConstraint(
-                check=~models.Q(user=models.F("author")),
-                name="user is not author"
+                check=~models.Q(user=models.F('author')),
+                name='user is not author'
             )
         ]

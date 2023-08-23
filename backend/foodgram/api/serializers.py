@@ -134,12 +134,12 @@ class RecipeSerializer(ModelSerializer):
         amount_list = [int(ingredient['amount']) for ingredient in ingredients]
         if len(ingredients_list) != len(set(ingredients_list)):
             raise ValidationError(
-                'Каждый ингредиент может быть добавлен не более 1 раза'
+                'Ингридиент уже добавлен'
             )
         for amount in amount_list:
             if amount <= 0:
                 raise ValidationError(
-                    'Количество должно быть больше нуля'
+                    'Нужен минимум 1 ингридиент'
                 )
         return data
 

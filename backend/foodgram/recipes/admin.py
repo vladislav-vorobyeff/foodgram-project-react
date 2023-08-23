@@ -44,12 +44,16 @@ class RecipeAdmin(admin.ModelAdmin):
         'image',
         'text',
         'cooking_time',
+        'how_many_times_favorited',
     )
     search_fields = (
         'name',
         'author',
-        'cooking_time',
+        'tags',
     )
+
+    def how_many_times_favorited(self, obj):
+        return obj.favorites.count()
 
 
 class FavoriteAdmin(admin.ModelAdmin):
@@ -65,7 +69,7 @@ class FavoriteAdmin(admin.ModelAdmin):
     )
 
 
-class ShopiingCartAdmin(admin.ModelAdmin):
+class ShoppingCartAdmin(admin.ModelAdmin):
     list_display = (
         'user',
         'recipe',
@@ -82,4 +86,4 @@ admin.site.register(Ingredient, IngedientAdmin)
 admin.site.register(Tag, TagAdmin)
 admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Favorite, FavoriteAdmin)
-admin.site.register(ShoppingCart, ShopiingCartAdmin)
+admin.site.register(ShoppingCart, ShoppingCartAdmin)
