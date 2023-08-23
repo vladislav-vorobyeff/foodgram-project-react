@@ -53,7 +53,7 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
     def how_many_times_favorited(self, obj):
-        return obj.favorites.count()
+        return obj.users_favorites.count()
 
 
 class FavoriteAdmin(admin.ModelAdmin):
