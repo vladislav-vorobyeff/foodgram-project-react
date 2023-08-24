@@ -31,4 +31,4 @@ class Command(BaseCommand):
                     batch_size=999
                 )
         except FileNotFoundError:
-            raise CommandError('Файл ingredients.csv не найден')
+            raise CommandError(f'Файл "{options["filename"]}" не найден')

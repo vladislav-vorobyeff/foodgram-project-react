@@ -27,12 +27,14 @@ class IngedientAdmin(admin.ModelAdmin):
 
 class IngredientRecipeInLine(admin.TabularInline):
     model = IngredientRecipe
-    extra = 1
+    extra = 2
+    min_num = 1
 
 
 class TagRecipeInLine(admin.TabularInline):
     model = TagRecipe
-    extra = 1
+    extra = 2
+    min_num = 1
 
 
 class RecipeAdmin(admin.ModelAdmin):
@@ -52,6 +54,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'tags',
     )
 
+    @admin.display(description='кол-во в избранном')
     def how_many_times_favorited(self, obj):
         return obj.users_favorites.count()
 

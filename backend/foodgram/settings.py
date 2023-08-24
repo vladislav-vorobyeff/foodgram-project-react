@@ -9,11 +9,11 @@ BASE_DIR = BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-123')
 
-DEBUG = True
+DEBUG = os.environ.get('DEBUG', default=True)
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split()
 
-CSRF_TRUSTED_ORIGINS = ['https://foodgramvlad.hopto.org']
+CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TR', default=True)]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -128,8 +128,6 @@ DJOSER = {
 
     'HIDE_USERS': False,
 }
-
-CSRF_TRUSTED_ORIGINS = ['https://foodgramvlad.hopto.org']
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')

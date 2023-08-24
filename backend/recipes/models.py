@@ -24,7 +24,6 @@ class Tag(models.Model):
     class Meta:
         verbose_name = 'Тег'
         verbose_name_plural = 'Теги'
-        ordering = ['id']
 
     def __str__(self):
         return self.name
@@ -82,14 +81,14 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         related_name='recipes',
-        through='TagRecipe',
         verbose_name='Теги',
     )
     cooking_time = models.PositiveIntegerField(
         'Время приготовления',
         default=1,
         validators=[
-            MinValueValidator(1)
+            MinValueValidator(1, 'Время приготовления '
+                              'не может быть меньше 1 мин')
         ]
     )
     pub_date = models.DateTimeField(

@@ -2,6 +2,8 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import RegexValidator
 from django.db import models
 
+from .validators import validate_username_me
+
 
 class CustomUser(AbstractUser):
     username = models.CharField(
@@ -12,7 +14,8 @@ class CustomUser(AbstractUser):
             RegexValidator(
                 regex=r"^[\w.@+-]+$",
                 message="Некорректный username",
-            )
+            ),
+            validate_username_me,
         ],
     )
     first_name = models.CharField(
@@ -27,14 +30,6 @@ class CustomUser(AbstractUser):
         'Email',
         max_length=200,
         unique=True
-    )
-    password = models.CharField(
-        'Пароль',
-        max_length=200
-    )
-    is_staff = models.BooleanField(
-        'Администратор?',
-        default=False
     )
 
     USERNAME_FIELD = 'email'
@@ -75,6 +70,7 @@ class Subscriptions(models.Model):
             ),
             models.CheckConstraint(
                 check=~models.Q(user=models.F('author')),
-                name='user is not author'
+                name='user is not author',
+                violation_error_message={'check': 'Пользователь - не автор'}
             )
         ]
