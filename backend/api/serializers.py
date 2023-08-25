@@ -1,11 +1,10 @@
-from django.db import transaction
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserSerializer
 from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
                             ShoppingCart, Tag)
 from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         PrimaryKeyRelatedField, ReadOnlyField,
                                         SerializerMethodField, ValidationError)
-from rest_framework.validators import UniqueTogetherValidator
 from users.models import CustomUser, Subscriptions
 
 from .services import Base64ImageField
@@ -101,19 +100,14 @@ class RecipeSerializer(ModelSerializer):
             'cooking_time'
         )
 
-    def to_representation(self, instance):
-        serializer = RecipeGetSerializer(instance)
-        return serializer.data
-
-    @transaction.atomic
     def _create_ingredients(self, ingredients, recipe):
-        IngredientRecipe.objects.bulk_create(
-            [IngredientRecipe(
-                ingredient_id=ingredient['id'],
-                recipe=recipe,
-                amount=ingredient['amount']
-            ) for ingredient in ingredients]
-        )
+        for ingredient in ingredients:
+            IngredientRecipe.objects.bulk_create([
+                IngredientRecipe(
+                    ingredient_id=ingredient.get('id'),
+                    recipe=recipe,
+                    amount=ingredient.get('amount'),)
+            ])
 
     def validate(self, data):
         ingredients = data.get('ingredients')
@@ -144,6 +138,10 @@ class RecipeSerializer(ModelSerializer):
         instance.tags.clear()
         instance.tags.set(tags)
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        serializer = RecipeGetSerializer(instance)
+        return serializer.data
 
 
 class UserSerializer(UserSerializer):
@@ -181,56 +179,60 @@ class UserSerializer(UserSerializer):
         ).exists()
 
 
-class SubscriptionsSerializer(ModelSerializer):
-    is_subscribed = SerializerMethodField()
-    recipe = SerializerMethodField()
+class SubscriptionsListSerializer(ModelSerializer):
+    """Сериалайзер для отображения всех подписок"""
+
+    recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
+    is_subscribed = SerializerMethodField(read_only=True)
 
     class Meta:
         model = CustomUser
         fields = (
-            'id',
-            'email',
-            'username',
-            'first_name',
-            'last_name',
-            'is_subscribed',
-            'recipe',
-            'recipes_count'
+            'email', 'id', 'username', 'first_name', 'last_name',
+            'is_subscribed', 'recipes', 'recipes_count'
         )
 
     def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if request is None or request.user.is_anonymous:
-            return False
         return Subscriptions.objects.filter(
-            subscriber=request.user, author=obj).exists()
+            user=self.context.get('request').user, author=obj
+        ).exists()
 
-    def get_recipe(self, obj):
+    def get_recipes(self, obj):
         request = self.context.get('request')
-        if not request or request.user.is_anonymous:
-            return False
-        recipe = obj.recipe.filter(author=obj)
-        seriailizer = ShortRecipeSerializer(recipe, many=True)
-        return seriailizer.data
+        limit = request.GET.get('recipes_limit')
+        queryset = Recipe.objects.filter(author=obj)
+        if limit:
+            queryset = queryset[:int(limit)]
+
+        return ShortRecipeSerializer(queryset, many=True).data
 
     def get_recipes_count(self, obj):
-        return obj.recipe.count()
+        return Recipe.objects.filter(author=obj).count()
 
 
-class SubscribeListSerializer(ModelSerializer):
-
+class SubscriptionsSerializer(ModelSerializer):
     class Meta:
         model = Subscriptions
-        fileds = '__all__'
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Subscriptions.objects.all(),
-                fields=['user', 'author'],
-            )
-        ]
+        fields = ('user', 'author')
+
+    def validate(self, data):
+        get_object_or_404(CustomUser, username=data['author'])
+        if self.context['request'].user == data['author']:
+            raise ValidationError({
+                'errors': 'Ты не пожешь подписаться на себя.'
+            })
+        if Subscriptions.objects.filter(
+                user=self.context['request'].user,
+                author=data['author']
+        ).exists():
+            raise ValidationError({
+                'errors': 'Уже подписан.'
+            })
+        return data
 
     def to_representation(self, instance):
-        return SubscriptionsSerializer(instance.author, context={
-            'request': self.context.get('request')
-        }).data
+        return SubscriptionsListSerializer(
+            instance.author,
+            context={'request': self.context.get('request')}
+        ).data
