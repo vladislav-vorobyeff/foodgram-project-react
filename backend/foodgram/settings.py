@@ -13,7 +13,7 @@ DEBUG = os.environ.get('DEBUG', default=True)
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '').split()
 
-CSRF_TRUSTED_ORIGINS = [os.environ.get('CSRF_TR', default=True)]
+CSRF_TRUSTED_ORIGINS = os.environ.get('CSRF_TR', '').split()
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -116,9 +116,9 @@ REST_FRAMEWORK = {
 
 DJOSER = {
     'SERIALIZERS': {
-        'user': 'api.serializers.UserSerializer',
-        'user_create': 'api.serializers.UserSerializer',
-        'current_user': 'api.serializers.UserSerializer',
+        'user': 'api.serializers.UserListSerializer',
+        'user_create': 'api.serializers.UserCreateSerializer',
+        'current_user': 'api.serializers.UserListSerializer',
     },
 
     'PERMISSIONS': {

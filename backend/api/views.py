@@ -40,7 +40,7 @@ class RecipeViewSet(ModelViewSet):
     filterset_class = RecipesFilter
 
     def get_serializer_class(self):
-        if self.action in ('create', 'partial_update'):
+        if self.action in ['create', 'partial_update']:
             return RecipeSerializer
         return RecipeGetSerializer
 
@@ -179,7 +179,7 @@ class UserViewSet(UserViewSet):
     )
     def subscriptions(self, request):
         user = request.user
-        queryset = CustomUser.objects.filter(subscribing__user=user)
+        queryset = CustomUser.objects.filter(author__user=user)
         pages = self.paginate_queryset(queryset)
         serializer = SubscriptionsSerializer(pages,
                                              many=True,
