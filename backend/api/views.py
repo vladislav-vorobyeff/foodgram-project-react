@@ -137,6 +137,11 @@ class UserViewSet(UserViewSet):
     serializer_class = UserSerializer
     pagination_class = CustomPagination
 
+    def get_serializer_class(self):
+        if self.action == "subscriptions":
+            return SubscriptionsSerializer
+        return UserSerializer
+
     @action(
         detail=False,
         methods=['GET'],
