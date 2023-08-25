@@ -1,8 +1,7 @@
 from djoser.serializers import UserSerializer
-from recipes.models import (Favorite, Ingredient, IngredientRecipe, Recipe,
-                            ShoppingCart, Tag)
-from rest_framework.serializers import (ImageField, IntegerField,
-                                        ModelSerializer,
+from recipes.models import (Ingredient, IngredientRecipe, Recipe, ShoppingCart,
+                            Tag)
+from rest_framework.serializers import (IntegerField, ModelSerializer,
                                         PrimaryKeyRelatedField, ReadOnlyField,
                                         SerializerMethodField, ValidationError)
 from rest_framework.validators import UniqueTogetherValidator
@@ -229,58 +228,3 @@ class SubscribeListSerializer(ModelSerializer):
         return SubscriptionsSerializer(instance.author, context={
             'request': self.context.get('request')
         }).data
-
-
-class FavoriteSerializer(ModelSerializer):
-    id = PrimaryKeyRelatedField(source="recipe", read_only=True)
-    name = ReadOnlyField(source="recipe.name")
-    image = ImageField(source="recipe.image", read_only=True)
-    cooking_time = IntegerField(source="recipe.cooking_time", read_only=True)
-
-    class Meta:
-        model = Favorite
-        fields = ("id", "name", "image", "cooking_time")
-
-    def validate(self, data):
-        user = data['user']
-        if user.favorites.filter(recipe=data['recipe']).exists():
-            raise ValidationError(
-                'Рецепт уже добавлен в избранное.'
-            )
-        return data
-
-    def to_representation(self, instance):
-        return ShortRecipeSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
-
-
-class ShoppingCartSerializer(ModelSerializer):
-    id = PrimaryKeyRelatedField(source="recipe", read_only=True)
-    name = ReadOnlyField(source="recipe.name")
-    image = ImageField(source="recipe.image", read_only=True)
-    cooking_time = IntegerField(source="recipe.cooking_time", read_only=True)
-
-    class Meta:
-        model = ShoppingCart
-        fields = (
-            "id",
-            "name",
-            "image",
-            "cooking_time",
-        )
-
-    def validate(self, data):
-        user = data['user']
-        if user.shopping_list.filter(recipe=data['recipe']).exists():
-            raise ValidationError(
-                'Рецепт уже добавлен в корзину'
-            )
-        return data
-
-    def to_representation(self, instance):
-        return ShortRecipeSerializer(
-            instance.recipe,
-            context={'request': self.context.get('request')}
-        ).data
