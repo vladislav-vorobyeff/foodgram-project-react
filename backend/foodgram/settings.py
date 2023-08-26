@@ -87,6 +87,7 @@ DATABASES = {
     }
 }
 
+
 AUTH_USER_MODEL = 'users.CustomUser'
 
 AUTH_PASSWORD_VALIDATORS = [
@@ -117,7 +118,7 @@ USE_TZ = True
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticatedOrReadOnly',
+        'rest_framework.permissions.AllowAny',
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
@@ -130,8 +131,8 @@ REST_FRAMEWORK = {
 DJOSER = {
     'SERIALIZERS': {
         'user': 'api.users.serializers.CustomUserSerializer',
-        'user_create': 'api.users.serializers.CustomUserSerializer',
-        'current_user': 'api.users.serializers.CustomUserCreateSerializer',
+        'user_create': 'api.users.serializers.CustomUserCreateSerializer',
+        'current_user': 'api.users.serializers.CustomUserSerializer',
     },
 
     'PERMISSIONS': {
