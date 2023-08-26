@@ -1,10 +1,10 @@
 from django_filters.rest_framework import (BooleanFilter, FilterSet,
                                            ModelChoiceFilter,
                                            ModelMultipleChoiceFilter)
+from ingredients.models import Ingredient
 from recipes.models import Recipe, Tag
 from rest_framework.filters import SearchFilter
 from users.models import CustomUser
-from ingredients.models import Ingredient
 
 
 class IngredientFilter(SearchFilter):
