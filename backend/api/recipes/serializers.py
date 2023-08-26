@@ -188,3 +188,26 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             'text',
             'cooking_time',
         )
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    id = serializers.CharField(
+        read_only=True,
+        source='recipe.id',
+    )
+    cooking_time = serializers.CharField(
+        read_only=True,
+        source='recipe.cooking_time',
+    )
+    image = serializers.CharField(
+        read_only=True,
+        source='recipe.image',
+    )
+    name = serializers.CharField(
+        read_only=True,
+        source='recipe.name',
+    )
+
+    class Meta:
+        model = ShoppingCart
+        fields = ('id', 'cooking_time', 'name', 'image')

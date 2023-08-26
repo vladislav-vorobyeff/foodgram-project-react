@@ -16,7 +16,8 @@ from shoppingcarts.models import ShoppingCart
 
 from ..services import generate_shopping_cart_text
 from ..users.serializers import RecipeShortSerializer
-from .serializers import RecipeCreateSerializer, RecipeSerializer
+from .serializers import (RecipeCreateSerializer, RecipeSerializer,
+                          ShoppingCartSerializer)
 
 
 class RecipeViewSet(ModelViewSet):
@@ -82,49 +83,32 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         detail=True,
-        methods=['POST'],
-        permission_classes=[IsAuthenticated]
+        methods=['GET', 'DELETE'],
+        permission_classes=[IsAuthenticatedOrReadOnly]
     )
     def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
+        recipe = get_object_or_404(Recipe, pk=pk)
         user = request.user
-        if user.is_authenticated:
-            if not ShoppingCart.objects.filter(
-                user=user,
-                recipe=recipe
-            ).exists():
-                ShoppingCart.objects.create(user=user, recipe=recipe)
-                serializer = RecipeShortSerializer(
-                    recipe,
-                    context={'request': request})
-                return Response(serializer.data)
-            return Response(
-                'Уже добавлено',
-                status=status.HTTP_400_BAD_REQUEST
+        if request.method == 'GET':
+            recipe, created = ShoppingCart.objects.get_or_create(
+                user=user, recipe=recipe
             )
-        return Response(
-            'Необходма авторизация',
-            status=status.HTTP_401_UNAUTHORIZED
-        )
-
-    @shopping_cart.mapping.delete
-    def remove_from_shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, id=pk)
-        user = request.user
-        if user.is_authenticated:
-            recipe_in_sopping_cart = ShoppingCart.objects.filter(
-                user=user, recipe=recipe)
-            if recipe_in_sopping_cart.exists():
-                recipe_in_sopping_cart.delete()
-                return Response('Уже удалено из списка покупок')
+            if created is True:
+                serializer = ShoppingCartSerializer()
+                return Response(
+                    serializer.to_representation(instance=recipe),
+                    status=status.HTTP_201_CREATED
+                )
             return Response(
-                'Нет в списке покупок',
-                status=status.HTTP_400_BAD_REQUEST
+                {'errors': 'Рецепт уже в корзине покупок'},
+                status=status.HTTP_201_CREATED
             )
-        return Response(
-            'Необходма авторизация',
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        if request.method == 'DELETE':
+            ShoppingCart.objects.filter(
+                user=user, recipe=recipe
+            ).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
     @action(
         detail=False,

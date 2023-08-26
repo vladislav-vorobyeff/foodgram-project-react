@@ -18,10 +18,14 @@ class ShoppingCart(models.Model):
         related_name='shopping_cart',
         verbose_name='Рецепт'
     )
+    add_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True
+    )
 
     class Meta:
         verbose_name = 'Список покупок'
-        verbose_name_plural = 'Список покупок'
+        verbose_name_plural = 'Списки покупок'
 
         constraints = (
             models.UniqueConstraint(
@@ -31,4 +35,4 @@ class ShoppingCart(models.Model):
         )
 
     def __str__(self):
-        return f'Рецепт "{self.recipe}" в списке покупок у {self.user}'
+        return f'{self.user} добавил "{self.recipe}" в список покупок'
