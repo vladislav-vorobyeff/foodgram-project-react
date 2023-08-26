@@ -1,25 +1,34 @@
 from django.contrib import admin
-from users.models import CustomUser, Subscriptions
+from django.contrib.auth import get_user_model
+
+from .models import Subscriptions
+
+User = get_user_model()
 
 
+@admin.register(User)
 class CustomUserAdmin(admin.ModelAdmin):
     list_display = (
+        'id',
         'username',
         'email',
         'first_name',
         'last_name',
-        'is_staff'
     )
-    search_fields = (
-        'username',
-        'email',
+    search_fields = ('email', 'username')
+    list_filter = ('email', 'first_name')
+    fields = (
+        ("username",),
+        ("email",),
+        ("first_name",),
+        ("last_name",),
+        ("password",),
     )
 
 
-class SubscriptionsAdmin(admin.ModelAdmin):
-    list_display = ('author', 'user', 'add_date')
-    search_fields = ('author', 'user', 'add_date')
-
-
-admin.site.register(CustomUser, CustomUserAdmin)
-admin.site.register(Subscriptions, SubscriptionsAdmin)
+@admin.register(Subscriptions)
+class SubscriptionSAdmin(admin.ModelAdmin):
+    list_display = (
+        'user',
+        'following'
+    )

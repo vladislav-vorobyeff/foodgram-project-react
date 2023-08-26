@@ -1,76 +1,64 @@
 from django.contrib.auth.models import AbstractUser
-from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
 from django.db import models
-
-from .validators import validate_username_me
 
 
 class CustomUser(AbstractUser):
-    username = models.CharField(
-        'username',
-        max_length=200,
-        unique=True,
-        validators=[
-            RegexValidator(
-                regex=r"^[\w.@+-]+$",
-                message="Некорректный username",
-            ),
-            validate_username_me,
-        ],
-    )
-    first_name = models.CharField(
-        'Имя',
-        max_length=200
-    )
-    last_name = models.CharField(
-        'Фамилия',
-        max_length=200
-    )
-    email = models.EmailField(
-        'Email',
-        max_length=200,
-        unique=True
-    )
+    email = models.EmailField(unique=True, verbose_name='Электронная почта')
+    first_name = models.CharField(max_length=30, verbose_name='Имя')
+    last_name = models.CharField(max_length=30, verbose_name='Фамилия')
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ('username', 'password', 'first_name', 'last_name')
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'Пользователь'
         verbose_name_plural = 'Пользователи'
-        ordering = ['-id']
+
+    def __str__(self):
+        return self.username
+
+    def clean(self):
+        super().clean()
+        if self.username == 'me':
+            raise ValidationError(
+                "Нельзя использовать 'me' в качестве имени пользователя."
+            )
 
 
 class Subscriptions(models.Model):
     user = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='subscriber',
-        verbose_name='Подписчик'
+        verbose_name='Подписчик',
+        related_name='follower',
     )
-    author = models.ForeignKey(
+    following = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        related_name='author',
-        verbose_name='Автор'
-    )
-    add_date = models.DateTimeField(
-        'Дата подписки',
-        auto_now_add=True
+        verbose_name='Автор',
+        related_name='following',
     )
 
     class Meta:
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
-        ordering = ['-add_date']
-        constraints = [
+        constraints = (
             models.UniqueConstraint(
-                fields=['user', 'author'],
-                name='unique_subscribe'
+                fields=(
+                    'user',
+                    'following',
+                ),
+                name='unique_follow',
             ),
-            models.CheckConstraint(
-                check=~models.Q(user=models.F('author')),
-                name='user is not author',
-                violation_error_message={'check': 'Пользователь - не автор'}
-            )
-        ]
+        )
+
+    def clean(self):
+        if self.user == self.following:
+            raise ValidationError('Нельзя подписаться на самого себя')
+
+    def __str__(self):
+        return (
+            f'{self.user.first_name} {self.user.last_name} подписался на '
+            f'{self.following.first_name} {self.following.last_name}'
+        )
