@@ -18,10 +18,6 @@ class ShoppingCart(models.Model):
         related_name='shopping_cart',
         verbose_name='Рецепт'
     )
-    add_date = models.DateTimeField(
-        'Дата добавления',
-        auto_now_add=True
-    )
 
     class Meta:
         verbose_name = 'Список покупок'
