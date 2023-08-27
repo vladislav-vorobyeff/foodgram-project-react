@@ -20,6 +20,7 @@ class Recipe(models.Model):
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipes',
+        through='IngredientRecipe', 
         verbose_name='Ингредиенты рецепта',
     )
     text = models.TextField(
