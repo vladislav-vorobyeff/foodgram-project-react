@@ -11,7 +11,7 @@ class Command(BaseCommand):
         parser.add_argument('filename', default='ingredients.csv', nargs='?',
                             type=str)
 
-    def handle(self, *args):
+    def handle(self, *args, **options):
         with open(
             'foodgram/data/ingredients.csv',
             encoding='utf8'
