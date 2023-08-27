@@ -2,6 +2,7 @@ from django.db import models
 
 from colorfield.fields import ColorField
 
+
 class Tag(models.Model):
     name = models.CharField(
         unique=True,
