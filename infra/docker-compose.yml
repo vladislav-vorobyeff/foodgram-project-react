@@ -5,7 +5,7 @@ services:
   db:
     image: postgres:13.0
     volumes:
-      - db_vol:/var/lib/postgresql/data/
+      - db:/var/lib/postgresql/data/
     restart: always
     env_file:
       - ./.env
@@ -13,8 +13,8 @@ services:
   backend:
     image: vladvorobyeff/foodgram_backend:latest
     volumes:
-      - static_vol:/app/static/
-      - media_vol:/app/media/
+      - static:/app/static/
+      - media:/app/media/
     depends_on:
       - db
     env_file:
@@ -34,14 +34,14 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
       - ../frontend/build:/usr/share/nginx/html/
-      - ./docs/:/usr/share/nginx/html/api/docs/
-      - static_vol:/var/html/static/
-      - media_vol:/var/html/media/
+      - ../docs/:/usr/share/nginx/html/api/docs/
+      - static:/var/html/static/
+      - media:/var/html/media/
     restart: always
     depends_on:
       - frontend
 
 volumes:
-  db_vol:
-  static_vol:
-  media_vol:
+  db:
+  static:
+  media:

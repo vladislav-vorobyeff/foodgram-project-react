@@ -5,8 +5,8 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from users.models import Subscriptions
 
+from users.models import Subscriptions
 from .serializers import CustomUserRecSerializer
 
 User = get_user_model()
@@ -16,10 +16,7 @@ class CustomUserViewSet(UserViewSet):
 
     def get_queryset(self):
         if self.action == 'subscriptions':
-            subscriptions = Subscriptions.objects.filter(
-                user=self.request.user
-            )
-            return [subscription.following for subscription in subscriptions]
+            return self.request.user.follower.all()
         return super().get_queryset()
 
     def get_serializer_class(self):
@@ -45,47 +42,37 @@ class CustomUserViewSet(UserViewSet):
         user = request.user
         if request.user == following:
             return Response('Нельзя оформить подписку на себя')
-        if user.is_authenticated:
-            if not Subscriptions.objects.filter(
-                    user=user,
-                    following=following).exists():
-                Subscriptions.objects.create(
-                    user=user,
-                    following=following
-                )
-                serializer = CustomUserRecSerializer(
-                    following,
-                    context={'request': request}
-                )
-                return Response(
-                    serializer.data,
-                    status=status.HTTP_201_CREATED
-                )
+        if Subscriptions.objects.filter(
+                user=user,
+                following=following).exists():
             return Response(
                 'Подписка уже оформлена',
                 status=status.HTTP_400_BAD_REQUEST
             )
+        Subscriptions.objects.create(
+            user=user,
+            following=following
+        )
+        serializer = CustomUserRecSerializer(
+            following,
+            context={'request': request}
+        )
         return Response(
-            'Необходима авторизация',
-            status=status.HTTP_401_UNAUTHORIZED
+            serializer.data,
+            status=status.HTTP_201_CREATED
         )
 
     @subscribe.mapping.delete
     def unsubscribe(self, request, id):
         following = get_object_or_404(User, id=id)
         user = request.user
-        if user.is_authenticated:
-            subscription = Subscriptions.objects.filter(
-                user=user, following=following)
-            if subscription.exists():
-                subscription.delete()
-                return Response('Подписка удалена')
+        subscription = Subscriptions.objects.filter(
+            user=user, following=following)
+        if not subscription.exists():
             return Response(
                 'Нельзя удалить несуществующую'
                 ' подписку',
                 status=status.HTTP_400_BAD_REQUEST
             )
-        return Response(
-            'Необходима авторизация',
-            status=status.HTTP_401_UNAUTHORIZED
-        )
+        subscription.delete()
+        return Response('Подписка удалена')

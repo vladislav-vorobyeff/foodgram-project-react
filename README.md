@@ -78,4 +78,4 @@ scp -r docs <username>@<ip host>@51.250.23.232:/home/<username>/
     ```
     - Импортровать в БД ингредиенты, чтобы пользователи могли ими пользоваться при создании рецептов:  
     ```
-    sudo docker-compose exec backend python3 manage.py load_ingredients
+    docker compose exec -it backend python manage.py load_ingredients data/ingredients.csv

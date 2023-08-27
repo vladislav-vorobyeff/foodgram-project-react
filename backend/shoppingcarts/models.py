@@ -1,5 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db import models
+
 from recipes.models import Recipe
 
 User = get_user_model()
@@ -22,7 +23,6 @@ class ShoppingCart(models.Model):
     class Meta:
         verbose_name = 'Список покупок'
         verbose_name_plural = 'Списки покупок'
-
         constraints = (
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
@@ -31,4 +31,4 @@ class ShoppingCart(models.Model):
         )
 
     def __str__(self):
-        return f'{self.user} добавил "{self.recipe}" в список покупок'
+        return f'{self.user} добавил "{self.recipe}" в свой список покупок'
