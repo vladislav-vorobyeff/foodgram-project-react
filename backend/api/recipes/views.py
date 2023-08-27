@@ -1,23 +1,22 @@
-from api.filters import RecipeFilter
-from api.permissions import IsAuthorOrReadOnly
 from django.db.models import Sum
-from django.http import FileResponse
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from favorites.models import Favorite
-from recipes.models import IngredientRecipe, Recipe
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
-from shoppingcarts.models import ShoppingCart
 
-from ..services import generate_shopping_cart_text
+from favorites.models import Favorite
+from shoppingcarts.models import ShoppingCart
+from recipes.models import IngredientRecipe, Recipe
+from api.filters import RecipeFilter
+from api.permissions import IsAuthorOrReadOnly
 from ..users.serializers import RecipeShortSerializer
-from .serializers import (RecipeCreateSerializer, RecipeSerializer,
-                          ShoppingCartSerializer)
+from .serializers import RecipeCreateSerializer, RecipeSerializer
 
 
 class RecipeViewSet(ModelViewSet):
@@ -83,49 +82,57 @@ class RecipeViewSet(ModelViewSet):
 
     @action(
         detail=True,
-        methods=['POST', 'DELETE'],
+        methods=['POST'],
         permission_classes=[IsAuthenticatedOrReadOnly]
     )
-    def shopping_cart(self, request, pk):
-        recipe = get_object_or_404(Recipe, pk=pk)
-        user = request.user
-        if request.method == 'POST':
-            recipe, created = ShoppingCart.objects.get_or_create(
-                user=user, recipe=recipe
-            )
-            if created is True:
-                serializer = ShoppingCartSerializer()
-                return Response(
-                    serializer.to_representation(instance=recipe),
-                    status=status.HTTP_201_CREATED
-                )
+    def shopping_cart(self, request, recipe_id):
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if ShoppingCart.objects.filter(user=request.user,
+                                       recipe=recipe).exists():
             return Response(
-                {'errors': 'Рецепт уже в корзине покупок'},
-                status=status.HTTP_201_CREATED
+                {'errors': 'УЖе находится в списке покупок'},
+                status=status.HTTP_400_BAD_REQUEST
             )
-        if request.method == 'DELETE':
-            ShoppingCart.objects.filter(
-                user=user, recipe=recipe
-            ).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        ShoppingCart.objects.create(user=request.user, recipe=recipe)
+        serializer = RecipeShortSerializer(recipe, many=False)
+        return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(
-        detail=False,
-        methods=['GET'],
-        permission_classes=[IsAuthenticated]
-    )
-    def download_shopping_cart(self, request):
-        shopping_cart = ShoppingCart.objects.filter(user=self.request.user)
-        recipes_in_shopping_cart = [item.recipe.id for item in shopping_cart]
-        ingredients_to_buy = IngredientRecipe.objects.filter(
-            recipe__in=recipes_in_shopping_cart).values('ingredient').annotate(
-                amount=Sum('amount'))
+    @shopping_cart.mapping.delete
+    def remove_from_shopping_cart(self, request, recipe_id):
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        if not ShoppingCart.objects.filter(user=request.user,
+                                           recipe=recipe).exists():
+            return Response(
+                {'errors': 'Нет в списке покупок'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        get_object_or_404(ShoppingCart, user=request.user,
+                          recipe=recipe).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
-        shopping_cart_text = generate_shopping_cart_text(ingredients_to_buy)
 
-        return FileResponse(
-            shopping_cart_text,
-            content_type="text/plain",
-            filename='shopping_cart.txt'
+class DownloadShoppingCartViewSet(APIView):
+    def get_ingredients(self, request):
+        ingredients = IngredientRecipe.objects.filter(
+            recipe__shopping_cart__user=request.user
+        ).values(
+            'ingredient__name',
+            'ingredient__measurement_unit'
+        ).annotate(amount=Sum('amount'))
+        return ingredients
+
+    def get_response(self, request):
+        ingredients = self.get_ingredients(request)
+        shoplist = '\n'.join([
+            f'- {ingredient["ingredient__name"]} '
+            f'({ingredient["ingredient__measurement_unit"]})'
+            f' - {ingredient["amount"]}'
+            for ingredient in ingredients
+        ])
+        response = HttpResponse(
+            shoplist,
+            content_type='text/plain, charset=utf8'
         )
+        response['Content-Disposition'] = 'attachment; '
+        'filename="shopping_list.txt"'
+        return response
