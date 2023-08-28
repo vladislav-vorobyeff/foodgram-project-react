@@ -89,14 +89,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     cooking_time = serializers.IntegerField()
 
-    def to_representation(self, instance):
-        serializer = RecipeSerializer(
-            instance,
-            context={'request': self.context.get('request')}
-        )
-
-        return serializer.data
-
     def _create_ingredients(self, ingredients, recipe):
         ingredient_list = []
         for ingredient in ingredients:
@@ -144,11 +136,11 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         ingredients = validated_data.pop('ingredients', None)
         instance.ingredients.clear()
 
-        ingredient_roster = set()
+        ingredient_ids = set()
         for ingredient in ingredients:
             amount = ingredient['amount']
             ingredient_id = ingredient['id']
-            ingredient_roster.add(ingredient_id)
+            ingredient_ids.add(ingredient_id)
 
             ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
 
@@ -159,6 +151,14 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             )
 
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        serializer = RecipeSerializer(
+            instance,
+            context={'request': self.context.get('request')}
+        )
+
+        return serializer.data
 
     class Meta:
         model = Recipe
