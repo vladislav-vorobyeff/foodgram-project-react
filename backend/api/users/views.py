@@ -54,7 +54,7 @@ class CustomUserViewSet(UserViewSet):
             following=following
         )
         serializer = CustomUserRecSerializer(
-            following,
+            user,
             context={'request': request}
         )
         return Response(
