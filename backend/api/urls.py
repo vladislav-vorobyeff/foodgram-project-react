@@ -16,11 +16,11 @@ router_v1.register('recipes', RecipeViewSet, basename='recipes')
 router_v1.register('users', CustomUserViewSet, basename='users')
 
 urlpatterns = [
-    path('', include(router_v1.urls)),
     path('auth/', include('djoser.urls.authtoken')),
     path(
         'recipes/download_shopping_cart/',
         DownloadShoppingCartViewSet.as_view(),
         name='download_shopping_cart'
     ),
+    path('', include(router_v1.urls)),
 ]

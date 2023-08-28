@@ -1,4 +1,3 @@
-from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
@@ -112,25 +111,29 @@ class RecipeViewSet(ModelViewSet):
 
 
 class DownloadShoppingCartViewSet(APIView):
-    def get_ingredients(self, request):
-        ingredients = IngredientRecipe.objects.filter(
-            recipe__shopping_cart__user=request.user
-        ).values(
-            'ingredient__name',
-            'ingredient__measurement_unit'
-        ).annotate(amount=Sum('amount'))
-        return ingredients
-
-    def get_response(self, request):
-        ingredients = self.get_ingredients(request)
-        shoplist = '\n'.join([
-            f'- {ingredient["ingredient__name"]} '
-            f'({ingredient["ingredient__measurement_unit"]})'
-            f' - {ingredient["amount"]}'
-            for ingredient in ingredients
-        ])
+    def get(self, request):
+        user = request.user
+        recipes_list = ShoppingCart.objects.filter(user=user).values('recipe')
+        recipes = Recipe.objects.filter(pk__in=recipes_list)
+        shopping_list_dict = {}
+        recipe_count = 0
+        for recipe in recipes:
+            recipe_count = recipe_count + 1
+            ing_amounts_list = IngredientRecipe.objects.filter(recipe=recipe)
+            for ing in ing_amounts_list:
+                if ing.ingredient.name in shopping_list_dict:
+                    shopping_list_dict[ing.ingredient.name][0] += ing.amount
+                else:
+                    shopping_list_dict[ing.ingredient.name] = [
+                        ing.amount, ing.ingredient.measurement_unit
+                    ]
+        shop_string = (
+            f'Количество рецептов: {recipe_count}\n\n'
+            f'Ингредиенты к покупке:\n\n')
+        for key, value in shopping_list_dict.items():
+            shop_string += f'{key} ({value[1]}) - {str(value[0])}\n'
         response = HttpResponse(
-            shoplist,
+            shop_string,
             content_type='text/plain, charset=utf8'
         )
         response['Content-Disposition'] = 'attachment; '
