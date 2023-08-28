@@ -16,7 +16,7 @@ class CustomUserViewSet(UserViewSet):
 
     def get_queryset(self):
         if self.action == 'subscriptions':
-            return self.request.user.follower.all()
+            return self.request.user.following.all()
         return super().get_queryset()
 
     def get_serializer_class(self):
@@ -54,7 +54,7 @@ class CustomUserViewSet(UserViewSet):
             following=following
         )
         serializer = CustomUserRecSerializer(
-            user,
+            following,
             context={'request': request}
         )
         return Response(
