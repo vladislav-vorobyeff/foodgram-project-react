@@ -18,7 +18,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         try:
             with open(
-                os.path.join(DATA_ROOT, '..', 'data', options['filename']),
+                os.path.join(DATA_ROOT, options['filename']),
                 newline='',
                 encoding='utf8'
             ) as csv_file:
