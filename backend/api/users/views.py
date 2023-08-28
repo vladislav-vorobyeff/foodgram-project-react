@@ -16,11 +16,8 @@ class CustomUserViewSet(UserViewSet):
 
     def get_queryset(self):
         if self.action == 'subscriptions':
-            subscriptions = Subscriptions.objects.filter(
-                user=self.request.user
-            )
-            return [subscription.following for subscription in subscriptions]
-        return super().get_queryset()
+            return User.objects.filter(following__user=self.request.user)
+        return User.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'subscriptions':
