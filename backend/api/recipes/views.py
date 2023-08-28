@@ -85,8 +85,8 @@ class RecipeViewSet(ModelViewSet):
         methods=['POST'],
         permission_classes=[IsAuthenticatedOrReadOnly]
     )
-    def shopping_cart(self, request, recipe_id):
-        recipe = get_object_or_404(Recipe, id=recipe_id)
+    def shopping_cart(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
         if ShoppingCart.objects.filter(user=request.user,
                                        recipe=recipe).exists():
             return Response(
@@ -98,8 +98,8 @@ class RecipeViewSet(ModelViewSet):
         return Response(data=serializer.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
-    def remove_from_shopping_cart(self, request, recipe_id):
-        recipe = get_object_or_404(Recipe, id=recipe_id)
+    def remove_from_shopping_cart(self, request, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
         if not ShoppingCart.objects.filter(user=request.user,
                                            recipe=recipe).exists():
             return Response(
