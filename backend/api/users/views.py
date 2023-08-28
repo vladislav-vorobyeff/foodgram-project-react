@@ -1,6 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models.aggregates import Count
-from django.db.models.expressions import Value
 from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
 from rest_framework import status
@@ -18,13 +16,10 @@ class CustomUserViewSet(UserViewSet):
 
     def get_queryset(self):
         if self.action == 'subscriptions':
-            return self.request.user.follower.select_related(
-                'following'
-            ).prefetch_related(
-                'following__recipe'
-            ).annotate(
-                recipes_count=Count('following__recipe'),
-                is_subscribed=Value(True), )
+            subscriptions = Subscriptions.objects.filter(
+                user=self.request.user
+            )
+            return [subscription.following for subscription in subscriptions]
         return super().get_queryset()
 
     def get_serializer_class(self):
