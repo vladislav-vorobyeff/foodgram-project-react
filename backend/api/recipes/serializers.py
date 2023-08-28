@@ -97,7 +97,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         return serializer.data
 
-    def _create_ingredients(ingredients, recipe):
+    def _create_ingredients(self, ingredients, recipe):
         ingredient_list = []
         for ingredient in ingredients:
             current_ingredient = get_object_or_404(
