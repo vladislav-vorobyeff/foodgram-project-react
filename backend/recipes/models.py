@@ -39,7 +39,7 @@ class Recipe(models.Model):
         'Время приготовления',
         default=1,
         validators=[
-            MinValueValidator(1)
+            MinValueValidator(1), 'Должно быть больше 0'
         ]
     )
     pub_date = models.DateTimeField(
@@ -72,7 +72,7 @@ class IngredientRecipe(models.Model):
     amount = models.PositiveIntegerField(
         'Количество',
         validators=[
-            MinValueValidator(1)
+            MinValueValidator(1), 'Должно быть больше 0'
         ]
     )
 

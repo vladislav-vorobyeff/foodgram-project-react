@@ -8,7 +8,7 @@ from ingredients.models import Ingredient
 from shoppingcarts.models import ShoppingCart
 from tags.models import Tag
 from recipes.models import IngredientRecipe, Recipe
-from ..services import Base64ImageField
+from ..fields import Base64ImageField
 from ..tags.serializers import TagSerializer
 from ..users.serializers import CustomUserSerializer
 
@@ -112,12 +112,12 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 'Количество ингредиентов должно быть больше 0'
             )
         ingredients = [item['id'] for item in value]
-        ingredients_roster = set()
         for ingredient in ingredients:
-            if ingredient in ingredients_roster:
+            if ingredients.count(ingredient) > 1:
                 raise ValidationError(
-                    'Ингредиенты не должны дублироваться')
-            ingredients_roster.add(ingredient)
+                    'Ингредиенты не должны дублироваться'
+                )
+
         return value
 
     def create(self, validated_data):
@@ -135,21 +135,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
 
         ingredients = validated_data.pop('ingredients', None)
         instance.ingredients.clear()
-
-        ingredient_ids = set()
-        for ingredient in ingredients:
-            amount = ingredient['amount']
-            ingredient_id = ingredient['id']
-            ingredient_ids.add(ingredient_id)
-
-            ingredient = get_object_or_404(Ingredient, pk=ingredient['id'])
-
-            IngredientRecipe.objects.update_or_create(
-                recipe=instance,
-                ingredient=ingredient,
-                defaults={'amount': amount}
-            )
-
+        self._create_ingredients(instance, ingredients)
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):

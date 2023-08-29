@@ -99,12 +99,6 @@ class RecipeViewSet(ModelViewSet):
     @shopping_cart.mapping.delete
     def remove_from_shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
-        if not ShoppingCart.objects.filter(user=request.user,
-                                           recipe=recipe).exists():
-            return Response(
-                {'errors': 'Нет в списке покупок'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         get_object_or_404(ShoppingCart, user=request.user,
                           recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

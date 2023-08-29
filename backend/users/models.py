@@ -70,5 +70,5 @@ class Subscriptions(models.Model):
     def __str__(self):
         return (
             f'{self.user.get_full_name()} подписался на '
-            f'{self.following.first_name} {self.following.last_name}'
+            f'{self.following.get_full_name()}'
         )
