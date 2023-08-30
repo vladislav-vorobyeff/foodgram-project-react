@@ -7,7 +7,6 @@ from rest_framework.decorators import action
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from favorites.models import Favorite
@@ -104,9 +103,12 @@ class RecipeViewSet(ModelViewSet):
                           recipe=recipe).delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-class DownloadShoppingCartViewSet(APIView):
-    def get(self, request):
+    @action(
+        detail=True,
+        methods=['GET'],
+        permission_classes=[IsAuthenticated]
+    )
+    def download_shopping_cart(self, request):
         ingredients = IngredientRecipe.objects.filter(
             recipe__shopping_cart__user=request.user).values(
                 'ingredient__name', 'ingredient__measurement_unit').annotate(

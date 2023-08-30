@@ -107,17 +107,23 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         IngredientRecipe.objects.bulk_create(ingredient_list)
 
     def validate_ingredients(self, value):
-        if not value:
-            raise ValidationError(
-                'Количество ингредиентов должно быть больше 0'
-            )
-        ingredients = [item['id'] for item in value]
-        for ingredient in ingredients:
-            if ingredients.count(ingredient) > 1:
-                raise ValidationError(
-                    'Ингредиенты не должны дублироваться'
-                )
-
+        ingredients = value
+        if not ingredients:
+            raise ValidationError({
+                'ingredients': 'Не выбран ни один ингредиент'
+            })
+        ingredients_roster = set()
+        for item in ingredients:
+            ingredient_id = item['id']
+            if ingredient_id in ingredients_roster:
+                raise ValidationError({
+                    'ingredients': 'Ингредиенты не могут повторяться'
+                })
+            ingredients_roster.add(ingredient_id)
+            if int(item['amount']) <= 0:
+                raise ValidationError({
+                    'amount': 'Количество ингредиента не должно быть <= 0'
+                })
         return value
 
     def create(self, validated_data):
